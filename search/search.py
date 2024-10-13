@@ -23,7 +23,7 @@ def main(target):
         print('请输入目标拼音')
         return
 
-    db_file = 'ancient_texts.db'
+    db_file = '/home/ytsun/Documents/3.1/Chinese_Toolbook/gujizhilian/search/ancient_texts.db'
     conn, cursor = connect_db(db_file)
 
     result = search_text(cursor, target)
