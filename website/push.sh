@@ -1,1 +1,1 @@
-rsync ~/files/2024autumn/toolbook_website ubuntu@10.129.82.37:~/ -avr --delete
+rsync ~/files/2024autumn/gujizhilian ubuntu@10.129.82.37:~/ -avr --delete
