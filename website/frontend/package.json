@@ -1,0 +1,53 @@
+{
+  "name": "mui-blog",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/joy": "^5.0.0-beta.48",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "https-browserify": "^1.0.0",
+    "local-ssl-proxy": "^2.0.5",
+    "re-resizable": "^6.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-resizable": "^3.0.5",
+    "react-scripts": "5.0.1",
+    "react-scroll-parallax": "^3.4.5",
+    "react-slick": "^0.30.2",
+    "react-spring": "^9.7.4",
+    "react-use": "^17.5.1",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^11.1.14",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
