@@ -1,0 +1,3 @@
+patch:
+  engine/translators/+:
+    - lua_translator@ancient_search

@@ -2,6 +2,10 @@ import sqlite3
 import re
 import argparse
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 # 连接数据库
 def connect_db(db_file):
@@ -19,25 +23,34 @@ def search_text(cursor, search_word):
     cursor.execute("SELECT content FROM ancient_texts WHERE content LIKE ?", ('%' + search_word + '%',))
     return cursor.fetchall()
 
-def main(target):
-    if not args:
-        print('请输入目标拼音')
-        return
+
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query', '')
+    # query = input()
+    if not query:
+        return jsonify([])
 
     db_file = './ancient_texts.db'
     conn, cursor = connect_db(db_file)
 
-    result = search_text(cursor, target)
-    clean_result = [remove_pinyin(row[0]) for row in result]
-
-    for row in clean_result:
-        print(row)
-
+    result = search_text(cursor, query)
     conn.close()
+    
+    # 处理逻辑有点问题    
+    clean_result = [remove_pinyin(row[0]) for row in result]
+    
+    final_res = [
+        {
+            'id': i,
+            'name': clean_result[i],
+            'description': "《十三經注疏》"
+        }
+        for i in range(len(clean_result))
+    ]
+    with app.app_context():
+        return jsonify(final_res)
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('target', type=str, help='待匹配的目标拼音')
-
-    args = parser.parse_args()
-    main(args.target)
+    app.run(debug=True, host='0.0.0.0')

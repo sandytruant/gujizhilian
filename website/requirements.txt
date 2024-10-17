@@ -1,0 +1,5 @@
+sqlite3
+re
+argparse
+flask
+flask_cors
