@@ -296,9 +296,11 @@ const SearchComponent = () => {
                         borderColor: 'neutral.outlinedBorder',
                         backgroundColor:
                           selectedIndex === index
-                            ? 'action.hover'
+                            ? 'lightgray'
                             : 'background.paper',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        outline: 'none',
+                        transition: "0.2s",
                       }}
                       onFocus={() => setSelectedIndex(index)}
                       onBlur={() => setSelectedIndex(-1)}

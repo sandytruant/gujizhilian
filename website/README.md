@@ -2,7 +2,7 @@
 
 ## 内容
 
-- 基于 Flask 的简易后端（对` search/search.py` 的修改）：`search.py`
+- 基于 Flask 的简易后端（对 `../search/search.py` 的修改）：`search.py`
 - 基于 React.js + MUI 的前端：`frontend/`
 
 ## 说明
