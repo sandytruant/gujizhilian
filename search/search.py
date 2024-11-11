@@ -1,7 +1,7 @@
 import sqlite3
 import re
 import argparse
-from flask import Flask, request, jsonify
+from SyllSeg import SyllSeg
 
 # 连接数据库
 def connect_db(db_file):
@@ -20,18 +20,26 @@ def search_text(cursor, search_word):
     return cursor.fetchall()
 
 def main(target):
+     
     if not args:
         print('请输入目标拼音')
         return
 
     db_file = './ancient_texts.db'
     conn, cursor = connect_db(db_file)
-
+    
+    syllables = SyllSeg().seg(target)
+    if syllables:
+        target = "|" + "%|".join(syllables)
+        strict_pattern = r"\|" + r"[^\|]*?\|".join(syllables)
+    # print(target)
+    # print(strict_pattern)
+    
     result = search_text(cursor, target)
-    clean_result = [remove_pinyin(row[0]) for row in result]
+    for row in result:
+        if re.findall(strict_pattern, row[0]):
+            print(row[0])
 
-    for row in clean_result:
-        print(row)
 
     conn.close()
 
