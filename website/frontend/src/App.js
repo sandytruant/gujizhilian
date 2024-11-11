@@ -6,6 +6,7 @@ import {
   Modal,
   Button,
   Stack,
+  Switch,
   TextField,
   Grid,
   Checkbox,
@@ -26,13 +27,16 @@ import {
   FormLabel,
   FormHelperText,
   Sheet,
+  Drawer,
 } from '@mui/joy'
+
 
 // import '@fontsource/inter'; // 字体
 import { styled } from '@mui/joy/styles'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
-
+import Pagination from '@mui/material/Pagination'
+import { Hidden } from '@mui/material'
 // import { useSpring, animated } from 'react-spring' // Spring 动画库
 
 function Info () {
@@ -74,65 +78,6 @@ function Info () {
         </Stack>
   )
 }
-
-function Settings () {
-  const Item = styled(Sheet)(({ theme }) => ({
-    ...theme.typography['body-sm'],
-    // textAlign: 'center',
-    fontWeight: theme.fontWeight.md,
-    color: theme.vars.palette.text.secondary,
-    border: '1px solid',
-    borderColor: theme.palette.divider,
-    padding: theme.spacing(2),
-    borderRadius: theme.radius.md,
-    flexGrow: 1
-  }))
-  return (
-    <Box>
-    <Typography level='title-md'>偏好设置</Typography>
-    <Stack spacing={1} direction='row' useFlexGap sx={{ flexWrap: 'wrap' }}>
-      <Item>
-        <FormControl>
-          <FormLabel>首选项</FormLabel>
-          <RadioGroup defaultValue='medium' name='radio-buttons-group'>
-            <Radio value='small' label='大陆简体' size='sm' />
-            <Radio value='small' label='大陆繁体' size='sm' />
-          </RadioGroup>
-          <Box sx={{ display: 'flex', gap: 3, pt: 1 }}>
-            <Checkbox label='开启模糊匹配' size='sm' defaultChecked />
-          </Box>
-        </FormControl>
-      </Item>
-
-      <Item>
-        <FormControl>
-          <FormLabel>复制</FormLabel>
-          <RadioGroup
-            defaultValue='medium'
-            name='radio-buttons-group'
-          ></RadioGroup>
-          <Box sx={{ display: 'flex', gap: 3, pt: 0 }}>
-            <Checkbox label='复制出处信息' size='sm' defaultChecked />
-          </Box>
-          <Box sx={{ display: 'flex', gap: 3, pt: 2 }}>
-            <Checkbox label='复制版本信息' size='sm' defaultChecked />
-          </Box>
-        </FormControl>
-      </Item>
-      <Item>
-        <FormControl>
-          <FormLabel>Sizes</FormLabel>
-          <RadioGroup defaultValue='medium' name='radio-buttons-group'>
-            <Radio value='small' label='Small' size='sm' />
-            <Radio value='medium' label='Medium' size='md' />
-          </RadioGroup>
-        </FormControl>
-      </Item>
-    </Stack>
-    </Box>
-  )
-}
-
 
 
 
@@ -179,10 +124,62 @@ const SearchComponent = () => {
     }
   }
 
+
+    const [value, setValue] = useState('option1');
+    const [style, setStyle] = useState('search'); // 状态来跟踪端口号
+    const [page, setPage] = useState(1);
+  
+    // 定义不同选项对应的函数
+    const handleOption1 = async () => {
+      setStyle('search'); 
+      console.log('Option 1 selected');
+    };
+  
+    const handleOption2 = async () => {
+      setStyle('search-zhs'); 
+      console.log('Option 2 selected');
+    };
+  
+  
+    // 当选项改变时，根据选中的值调用对应的函数
+    const handleChange = (event) => {
+      setValue(event.target.value);
+      switch (event.target.value) {
+        case 'option1':
+          handleOption1();
+          break;
+        case 'option2':
+          handleOption2();
+          break;
+        default:
+          console.log('Unknown option selected');
+      }
+    };
+    useEffect(() => {
+      async function performSearch() {
+        if (query.length > 1) {
+          const searchResults = await searchFunction(query);
+          setResults(searchResults);
+          setSelectedIndex(-1); // 重置选中索引
+        } else {
+          setResults([]);
+          setSelectedIndex(-1); // 重置选中索引
+        }
+      }
+  
+      if (page) {
+        performSearch();
+      }
+    }, [page]); // 依赖项数组，当 page 或 query 变化时，重新执行搜索
+  
+    const handlePage = (event, value) => {
+      setPage(value);
+    };
+   
   const searchFunction = async query => {
     try {
       const response = await fetch(
-        `https://10.129.82.37:5001/search?query=${encodeURIComponent(query)}`
+        `https://10.129.82.37:5001/${style}?query=${encodeURIComponent(query)}&page=${page}`
       )
       if (!response.ok) {
         throw new Error('Network response was not ok')
@@ -198,13 +195,33 @@ const SearchComponent = () => {
     }
   }
 
+  const [copySource, setCopySource] = useState(false); 
+  const handleCopySource = (event) => {
+    setCopySource(event.target.checked);
+  };
+
   const copyResultToSearch = result => {
-    setQuery(result.name)
+    if (copySource) {
+      setQuery(result.name + `（《${result.description}》）`)
+    } else {
+      setQuery(result.name)
+    }
+
     setResults([]) // 可选：搜索后将结果列表清空
   }
 
   const copyResultToClipboard = result => {
-    navigator.clipboard
+    if ( copySource ) {
+      navigator.clipboard
+      .writeText(result.name + `（《${result.description}》）`)
+      .then(() => {
+        setSnackbarOpen(true) // 复制成功后，显示Snackbar
+      })
+      .catch(error => {
+        console.error('Failed to copy text: ', error)
+      })
+    } else {
+      navigator.clipboard
       .writeText(result.name)
       .then(() => {
         setSnackbarOpen(true) // 复制成功后，显示Snackbar
@@ -212,6 +229,8 @@ const SearchComponent = () => {
       .catch(error => {
         console.error('Failed to copy text: ', error)
       })
+    }
+    
   }
 
   const handleSnackbarClose = (event, reason) => {
@@ -234,10 +253,28 @@ const SearchComponent = () => {
     )
   } 
 
-  
+  const Item = styled(Sheet)(({ theme }) => ({
+    ...theme.typography['body-sm'],
+    // textAlign: 'center',
+    fontWeight: theme.fontWeight.md,
+    color: theme.vars.palette.text.secondary,
+    border: '1px solid',
+    borderColor: theme.palette.divider,
+    padding: theme.spacing(2),
+    borderRadius: theme.radius.md,
+    flexGrow: 1
+  }))
+
+  const [openDrawer, setOpenDrawer] = React.useState(false);
+
+  const toggleDrawer = (newOpen) => () => {
+    setOpenDrawer(newOpen);
+  };
+
+
   return (
-    <div style={{ textAlign: 'center', width: '100%' }}>
-      <Stack style={{ textAlign: 'center', height: '100%' }} spacing={1.5}>
+    <div style={{ textAlign: 'center', width: '100%', height:"100vh", overflowY:"hidden" }}>
+      <Stack style={{ textAlign: 'center', height: '100vh',overflowY:"hidden" }} spacing={1.5}>
         <Card
           sx={{
             border: 0,
@@ -251,9 +288,6 @@ const SearchComponent = () => {
             
           }}
         >
-          <div style={{position: "absolute", bottom: "10vh", width: "98vw", textAlign: 'center'}}>
-            向下滑动查看更多
-          </div>
 
 
            {/* <div style={{ position: 'sticky', top: 0}}> */}
@@ -266,12 +300,12 @@ const SearchComponent = () => {
           {/* </div> */}
 
           <center>
-            <Stack style={{ maxWidth: 800, textAlign: 'left' }} spacing={1.5}>
+            <Stack style={{ maxWidth: 800, textAlign: 'left', }} spacing={1.5}>
               <Card
                 size='md'
                 sx={{
                   backdropFilter: 'blur(20px)',
-                  backgroundColor: 'rgba(255,255,255,0.5)'
+                  backgroundColor: 'rgba(255,255,255,0.5)',
                 }}
               >
                 <Typography level='body-sm'>
@@ -285,7 +319,7 @@ const SearchComponent = () => {
                   sx={{ mb: 2 }}
                 />
                 <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {results.map((result, index) => (
+                  {results.slice(0,-1).map((result, index) => (
                     <Box
                       key={result.id}
                       ref={el => (resultsRef.current[index] = el)}
@@ -314,7 +348,12 @@ const SearchComponent = () => {
                       </Typography>
                     </Box>
                   ))}
+                  
                 </Box>
+                {results.length > 0 && <>共 {results[results.length-1].num} 条</>} 
+                <Stack spacing={2} alignItems="center">
+                {results.length > 0 && <Pagination count={Math.ceil(results[results.length-1].num / 10)} page={page} onChange={handlePage}/>}
+                </Stack>
               </Card>
             </Stack>
           </center>
@@ -340,22 +379,69 @@ const SearchComponent = () => {
         >
           ❤️文本已复制到剪贴板
         </Snackbar>
-        </Card>
-      </Stack>
+        <Button onClick={toggleDrawer(true)} variant="soft" sx={{position:"absolute"}}>设置</Button>
+      <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
+
       <Stack
         style={{
-          padding: 50,
-          maxWidth: 800,
+          padding: 20,
+          // maxWidth: 800,
           display: 'inline-block',
           textAlign: 'left'
         }}
         spacing={1.5}
       >
-        
-        <Settings/>
+                <img
+              src='logo.png'
+              style={{ width: '100px', paddingTop: '10vh',}}
+            />
+        <Card>
+
+    <Typography level='h4'>偏好设置</Typography>
+    <Stack spacing={1} direction='row' useFlexGap sx={{ flexWrap: 'wrap' }}>
+    <Item>
+        <FormControl>
+          <FormLabel>注意：请在校园网环境下使用。</FormLabel>
+          如果未能正常显示，可能是因为尚未信任服务器端。点击下方按钮，在新页面中点击“高级”→信任/继续访问
+          <a href='https://10.129.82.37:5001/trust'><Button variant="outlined">信任服务器</Button></a>
+        </FormControl>
+      </Item>
+      <Item>
+        <FormControl>
+          <FormLabel>首选项</FormLabel>
+          <RadioGroup onChange={handleChange} value={value}>
+              <Radio value="option1" label="大陆繁体"></Radio>
+              <Radio value="option2" label="大陆简体"></Radio>
+          </RadioGroup>
+        </FormControl>
+      </Item>
+
+      <Item>
+      <FormControl>
+          <FormLabel>复制</FormLabel>
+          <Box sx={{ display: 'flex', gap: 3, pt: 0 }}>
+          <Switch
+  checked={copySource}
+  onChange={handleCopySource}
+/> 复制出处信息
+
+          </Box>
+          {/* <Box sx={{ display: 'flex', gap: 3, pt: 2 }}>
+            <Checkbox label='复制版本信息' size='sm' defaultChecked />
+          </Box> */}
+          </FormControl>
+      </Item>
+    </Stack>
+    </Card>
+
         <Info/>
 
       </Stack>
+      </Drawer>
+        </Card>
+      </Stack>
+
+
     </div>
   )
 }
